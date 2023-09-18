@@ -924,6 +924,15 @@ server_read_child (GIOChannel *source, GIOCondition condition, server *serv)
 		PrintText (sess, outbuf);
 		server_disconnect (sess, FALSE, -1);
 		break;
+#ifdef HAVE_NET_BIND_TO_INTERFACE
+	case 11:						  /* net_bind_to_interface failed */
+		waitline2 (source, tbuf, sizeof tbuf);
+		waitline2 (source, tbuf2, sizeof tbuf2);
+		sprintf (outbuf, _("Failed to bind socket to interface named \"%s\": %s\n"), tbuf, tbuf2);
+		PrintText (sess, outbuf);
+		server_disconnect (sess, FALSE, -1);
+		break;
+#endif
 	}
 
 	return TRUE;
@@ -1386,19 +1395,44 @@ server_child (server * serv)
 	int proxy_type = 0;
 	char *proxy_host = NULL;
 	int proxy_port;
+	const char *sok4_error, *sok6_error;
 
 	ns_server = net_store_new ();
+
+#ifdef HAVE_NET_BIND_TO_INTERFACE
+	if (prefs.hex_net_bind_interface[0])
+	{
+		int r = net_bind_to_interface (prefs.hex_net_bind_interface, serv->sok4, serv->sok6,
+				&sok4_error, &sok6_error);
+		if (r == 3)
+		{
+			const char *format = (strncmp (sok4_error, sok6_error, 128) == 0) ? "11\n%s\n%s\n" :
+					"11\n%s\n%s; %s\n";
+			g_snprintf (buf, sizeof (buf), format, prefs.hex_net_bind_interface, sok4_error,
+					sok6_error);
+			write (serv->childwrite, buf, strlen (buf));
+			goto xit;
+		}
+		/* close the socket that fails to bind to make sure it isn't used */
+		else if (r == 2)
+			closesocket (serv->sok6);
+		else if (r == 1)
+			closesocket (serv->sok4);
+		/* bound seems to be unused by traverse_proxy but just set it anyway */
+		bound = 1;
+	}
+#endif
 
 	/* is a hostname set? - bind to it */
 	if (prefs.hex_net_bind_host[0])
 	{
+		int bind_success = 0;
 		ns_local = net_store_new ();
 		local_ip = net_resolve (ns_local, prefs.hex_net_bind_host, 0, &real_hostname);
 		if (local_ip != NULL)
 		{
 			g_snprintf (buf, sizeof (buf), "5\n%s\n", local_ip);
 			write (serv->childwrite, buf, strlen (buf));
-			const char *sok4_error, *sok6_error;
 			int r = net_bind (ns_local, serv->sok4, serv->sok6, &sok4_error, &sok6_error);
 			if (r & 1 && r & 2)
 			{
@@ -1409,7 +1443,7 @@ server_child (server * serv)
 				write (serv->childwrite, buf, strlen (buf));
 			} else
 			{
-				bound = 1;
+				bind_success = bound = 1;
 				/* close the socket that fails to bind to make sure it isn't used */
 				if (r == 1)
 					closesocket (serv->sok4);
@@ -1421,7 +1455,7 @@ server_child (server * serv)
 			write (serv->childwrite, "7\n", 2);
 		}
 		net_store_destroy (ns_local);
-		if (! bound)
+		if (! bind_success)
 			goto xit;
 	}
 

@@ -631,8 +631,11 @@ static const char *const proxyuse[] =
 static const setting network_settings[] =
 {
 	{ST_HEADER,	N_("Your Address"), 0, 0, 0, 0},
-	{ST_ENTRY,	N_("Bind to:"), P_OFFSETNL(hex_net_bind_host), 0, 0, sizeof prefs.hex_net_bind_host},
+	{ST_ENTRY,	N_("Bind to address:"), P_OFFSETNL(hex_net_bind_host), 0, 0, sizeof prefs.hex_net_bind_host},
 	{ST_LABEL,	N_("Only useful for computers with multiple addresses.")},
+#ifdef HAVE_NET_BIND_TO_INTERFACE
+	{ST_ENTRY,	N_("Bind to interface:"), P_OFFSETNL(hex_net_bind_interface), 0, 0, sizeof prefs.hex_net_bind_interface},
+#endif
 
 	{ST_HEADER, N_("File Transfers"), 0, 0, 0},
 	{ST_TOGGLE, N_("Get my address from the IRC server"), P_OFFINTNL(hex_dcc_ip_from_server),

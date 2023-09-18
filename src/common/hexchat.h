@@ -302,6 +302,7 @@ struct hexchatprefs
 	char hex_irc_real_name[127];
 	char hex_irc_user_name[127];
 	char hex_net_bind_host[127];
+	char hex_net_bind_interface[127];
 	char hex_net_proxy_host[64];
 	char hex_net_proxy_pass[256];
 	char hex_net_proxy_user[256];

@@ -82,6 +82,20 @@ if libssl_dep.found()
   )
 endif
 
+if get_option('bind-to-interface').enabled()
+  code = '''
+#include <sys/socket.h>
+#include <netinet/in.h>
+#if defined(SO_BINDTODEVICE)
+#elif defined(IP_BOUND_IF)
+#include <net/if.h>
+#elif !defined(IP_FORCE_OUT_IFP)
+#error No bind to interface support
+#endif
+'''
+  config_h.set('HAVE_NET_BIND_TO_INTERFACE', cc.compiles(code, name : 'bind to interface support'))
+endif
+
 configure_file(output: 'config.h', configuration: config_h)
 config_h_include = include_directories('.')
 

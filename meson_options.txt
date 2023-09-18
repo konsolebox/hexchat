@@ -22,6 +22,9 @@ option('dbus', type: 'feature', value: 'auto',
 option('libcanberra', type: 'feature', value: 'auto',
   description: 'Support for sound alerts, Unix only'
 )
+option('bind-to-interface', type: 'feature', value: 'enabled',
+  description: 'Enable bind to interface feature if system supports it'
+)
 
 # Install options
 option('dbus-service-use-appid', type: 'boolean', value: false,

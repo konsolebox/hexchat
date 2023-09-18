@@ -36,6 +36,9 @@ void net_store_destroy (netstore *ns);
 int net_connect (netstore *ns, int sok4, int sok6, int *sok_return);
 char *net_resolve (netstore *ns, char *hostname, int port, char **real_host);
 int net_bind (netstore *tobindto, int sok4, int sok6, const char **sok4_error, const char **sok6_error);
+#ifdef HAVE_NET_BIND_TO_INTERFACE
+int net_bind_to_interface (const char *interface, int sok4, int sok6, const char **sok4_error, const char **sok6_error);
+#endif
 char *net_ip (guint32 addr);
 void net_sockets (int *sok4, int *sok6);
 

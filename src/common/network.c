@@ -35,6 +35,10 @@
 #define WANTDNS
 #include "inet.h"
 
+#if !defined(SO_BINDTODEVICE) && defined(IP_BOUND_IF)
+#include <net/if.h>
+#endif
+
 #define NETWORK_PRIVATE
 #include "network.h"
 
@@ -185,6 +189,50 @@ net_bind (netstore *tobindto, int sok4, int sok6, const char **sok4_error, const
 
 	return r;
 }
+
+#ifdef HAVE_NET_BIND_TO_INTERFACE
+static int
+net_bind_socket_to_interface (int socket, const char *interface, int is_ipv6)
+{
+#if defined(SO_BINDTODEVICE)
+	return setsockopt (socket, SOL_SOCKET, SO_BINDTODEVICE, interface, strlen(interface) + 1);
+#elif defined(IP_BOUND_IF)
+	int index = if_nametoindex(interface);
+	if (index == 0)
+		return -1;
+	else if (is_ipv6)
+		return setsockopt(socket, IPPROTO_IPV6, IPV6_BOUND_IF, &index, sizeof(index));
+	else
+		return setsockopt(socket, IPPROTO_IP, IP_BOUND_IF, &index, sizeof(index));
+#elif defined(IP_FORCE_OUT_IFP)
+	return setsockopt(socket, SOL_SOCKET, IP_FORCE_OUT_IFP, interface, strlen(interface) + 1);
+#else
+#error SO_BINDTODEVICE, IP_BOUND_IF and IP_FORCE_OUT_IFP are all undefined unexpectedly
+#endif
+}
+
+int
+net_bind_to_interface (const char *interface, int sok4, int sok6, const char **sok4_error,
+		const char **sok6_error)
+{
+	int r = 0;
+	*sok4_error = *sok6_error = NULL;
+
+	if (net_bind_socket_to_interface (sok4, interface, 0) != 0)
+	{
+		r |= 1;
+		*sok4_error = strerror (errno);
+	}
+
+	if (net_bind_socket_to_interface (sok6, interface, 1) != 0)
+	{
+		r |= 2;
+		*sok6_error = strerror (errno);
+	}
+
+	return r;
+}
+#endif
 
 void
 net_sockets (int *sok4, int *sok6)
