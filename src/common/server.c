@@ -822,6 +822,7 @@ server_read_child (GIOChannel *source, GIOCondition condition, server *serv)
 		PrintText (serv->server_session, tbuf);
 		break;
 	case 1:						  /* unknown host */
+		waitline2 (source, tbuf, sizeof tbuf);
 		server_stopconnecting (serv);
 		closesocket (serv->sok4);
 		if (serv->proxy_sok4 != -1)
@@ -834,6 +835,7 @@ server_read_child (GIOChannel *source, GIOCondition condition, server *serv)
 		if (!servlist_cycle (serv))
 			if (prefs.hex_net_auto_reconnectonfail)
 				auto_reconnect (serv, FALSE, -1);
+		server_disconnect (sess, FALSE, -1);
 		break;
 	case 2:						  /* connection failed */
 		waitline2 (source, tbuf, sizeof tbuf);
@@ -1521,7 +1523,8 @@ server_child (server * serv)
 		g_free (proxy_host);
 		if (!ip)
 		{
-			write (serv->childwrite, "1\n", 2);
+			g_snprintf (buf, sizeof (buf), "1\n%s\n", proxy_host);
+			write (serv->childwrite, buf, strlen (buf));
 			goto xit;
 		}
 		connect_port = proxy_port;
@@ -1533,8 +1536,8 @@ server_child (server * serv)
 			proxy_ip = net_resolve (ns_proxy, hostname, port, &real_hostname);
 			if (!proxy_ip)
 			{
-				write (serv->childwrite, "1\n", 2);
-				goto xit;
+				g_snprintf (buf, sizeof (buf), "1\n%s\n", hostname);
+				write (serv->childwrite, buf, strlen (buf));
 			}
 		} else						  /* otherwise we can just use the hostname */
 			proxy_ip = g_strdup (hostname);
@@ -1543,7 +1546,8 @@ server_child (server * serv)
 		ip = net_resolve (ns_server, hostname, port, &real_hostname);
 		if (!ip)
 		{
-			write (serv->childwrite, "1\n", 2);
+			g_snprintf (buf, sizeof (buf), "1\n%s\n", hostname);
+			write (serv->childwrite, buf, strlen (buf));
 			goto xit;
 		}
 		connect_port = port;
