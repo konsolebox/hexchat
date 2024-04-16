@@ -805,16 +805,22 @@ server_read_child (GIOChannel *source, GIOCondition condition, server *serv)
 	char outbuf[512];
 	char host[100];
 	char ip[100];
+	int code;
 
 	waitline2 (source, tbuf, sizeof tbuf);
 
-	switch (tbuf[0])
+	if (tbuf[0] == '0')
+		code = 0;
+	else if ((code = atoi (tbuf)) == 0)
+		code = -1;
+
+	switch (code)
 	{
-	case '0':	/* print some text */
+	case 0:	/* print some text */
 		waitline2 (source, tbuf, sizeof tbuf);
 		PrintText (serv->server_session, tbuf);
 		break;
-	case '1':						  /* unknown host */
+	case 1:						  /* unknown host */
 		server_stopconnecting (serv);
 		closesocket (serv->sok4);
 		if (serv->proxy_sok4 != -1)
@@ -828,7 +834,7 @@ server_read_child (GIOChannel *source, GIOCondition condition, server *serv)
 			if (prefs.hex_net_auto_reconnectonfail)
 				auto_reconnect (serv, FALSE, -1);
 		break;
-	case '2':						  /* connection failed */
+	case 2:						  /* connection failed */
 		waitline2 (source, tbuf, sizeof tbuf);
 		server_stopconnecting (serv);
 		closesocket (serv->sok4);
@@ -844,13 +850,13 @@ server_read_child (GIOChannel *source, GIOCondition condition, server *serv)
 			if (prefs.hex_net_auto_reconnectonfail)
 				auto_reconnect (serv, FALSE, -1);
 		break;
-	case '3':						  /* gethostbyname finished */
+	case 3:						  /* gethostbyname finished */
 		waitline2 (source, host, sizeof host);
 		waitline2 (source, ip, sizeof ip);
 		waitline2 (source, outbuf, sizeof outbuf);
 		EMIT_SIGNAL (XP_TE_CONNECT, sess, host, ip, outbuf, NULL, 0);
 		break;
-	case '4':						  /* success */
+	case 4:						  /* success */
 		waitline2 (source, tbuf, sizeof (tbuf));
 		serv->sok = atoi (tbuf);
 		/* close the one we didn't end up using */
@@ -891,21 +897,21 @@ server_read_child (GIOChannel *source, GIOCondition condition, server *serv)
 
 		server_connect_success (serv);
 		break;
-	case '5':						  /* prefs ip discovered */
+	case 5:						  /* prefs ip discovered */
 		waitline2 (source, tbuf, sizeof tbuf);
 		prefs.local_ip = inet_addr (tbuf);
 		break;
-	case '7':						  /* gethostbyname (prefs.hex_net_bind_host) failed */
+	case 7:						  /* gethostbyname (prefs.hex_net_bind_host) failed */
 		sprintf (outbuf,
 					_("Cannot resolve hostname %s\nCheck your IP Settings!\n"),
 					prefs.hex_net_bind_host);
 		PrintText (sess, outbuf);
 		break;
-	case '8':
+	case 8:
 		PrintText (sess, _("Proxy traversal failed.\n"));
 		server_disconnect (sess, FALSE, -1);
 		break;
-	case '9':
+	case 9:
 		waitline2 (source, tbuf, sizeof tbuf);
 		EMIT_SIGNAL (XP_TE_SERVERLOOKUP, sess, tbuf, NULL, NULL, NULL, 0);
 		break;
