@@ -802,6 +802,7 @@ server_read_child (GIOChannel *source, GIOCondition condition, server *serv)
 {
 	session *sess = serv->server_session;
 	char tbuf[128];
+	char tbuf2[128];
 	char outbuf[512];
 	char host[100];
 	char ip[100];
@@ -906,6 +907,7 @@ server_read_child (GIOChannel *source, GIOCondition condition, server *serv)
 					_("Cannot resolve hostname %s\nCheck your IP Settings!\n"),
 					prefs.hex_net_bind_host);
 		PrintText (sess, outbuf);
+		server_disconnect (sess, FALSE, -1);
 		break;
 	case 8:
 		PrintText (sess, _("Proxy traversal failed.\n"));
@@ -914,6 +916,13 @@ server_read_child (GIOChannel *source, GIOCondition condition, server *serv)
 	case 9:
 		waitline2 (source, tbuf, sizeof tbuf);
 		EMIT_SIGNAL (XP_TE_SERVERLOOKUP, sess, tbuf, NULL, NULL, NULL, 0);
+		break;
+	case 10:						  /* net_bind failed */
+		waitline2 (source, tbuf, sizeof tbuf);
+		waitline2 (source, tbuf2, sizeof tbuf2);
+		sprintf (outbuf, _("Failed to bind %s to socket: %s\n"), tbuf, tbuf2);
+		PrintText (sess, outbuf);
+		server_disconnect (sess, FALSE, -1);
 		break;
 	}
 
@@ -1389,13 +1398,31 @@ server_child (server * serv)
 		{
 			g_snprintf (buf, sizeof (buf), "5\n%s\n", local_ip);
 			write (serv->childwrite, buf, strlen (buf));
-			net_bind (ns_local, serv->sok4, serv->sok6);
-			bound = 1;
+			const char *sok4_error, *sok6_error;
+			int r = net_bind (ns_local, serv->sok4, serv->sok6, &sok4_error, &sok6_error);
+			if (r & 1 && r & 2)
+			{
+				/* attempt to bind failed on both ipv4 and ipv6 */
+				const char *format = (strncmp (sok4_error, sok6_error, 128) == 0) ? "10\n%s\n%s\n" :
+						"10\n%s\n%s; %s\n";
+				g_snprintf (buf, sizeof (buf), format, local_ip, sok4_error, sok6_error);
+				write (serv->childwrite, buf, strlen (buf));
+			} else
+			{
+				bound = 1;
+				/* close the socket that fails to bind to make sure it isn't used */
+				if (r == 1)
+					closesocket (serv->sok4);
+				else if (r == 2)
+					closesocket (serv->sok6);
+			}
 		} else
 		{
 			write (serv->childwrite, "7\n", 2);
 		}
 		net_store_destroy (ns_local);
+		if (! bound)
+			goto xit;
 	}
 
 	if (!serv->dont_use_proxy) /* blocked in serverlist? */
