@@ -571,6 +571,9 @@ tray_menu_cb (GtkWidget *widget, guint button, guint time, gpointer userdata)
 	if (away_status == 2)
 		gtk_widget_set_sensitive (item, FALSE);
 
+	menu_toggle_item (_("Show notifications"), menu, tray_toggle_cb, &prefs.hex_input_tray_show_alerts,
+			prefs.hex_input_tray_show_alerts);
+
 	menu_add_plugin_items (menu, "\x5$TRAY", NULL);
 
 	tray_make_item (menu, NULL, tray_menu_quit_cb, NULL);

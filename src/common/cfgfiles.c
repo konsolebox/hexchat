@@ -495,6 +495,7 @@ const struct prefs vars[] =
 	{"input_tray_chans", P_OFFINT (hex_input_tray_chans), TYPE_BOOL},
 	{"input_tray_hilight", P_OFFINT (hex_input_tray_hilight), TYPE_BOOL},
 	{"input_tray_priv", P_OFFINT (hex_input_tray_priv), TYPE_BOOL},
+	{"input_tray_show_alerts", P_OFFINT (hex_input_tray_show_alerts), TYPE_BOOL},
 
 	{"irc_auto_rejoin", P_OFFINT (hex_irc_auto_rejoin), TYPE_BOOL},
 	{"irc_reconnect_rejoin", P_OFFINT (hex_irc_reconnect_rejoin), TYPE_BOOL},
@@ -783,6 +784,7 @@ load_default_config(void)
 	prefs.hex_input_flash_priv = 1;
 	prefs.hex_input_tray_hilight = 1;
 	prefs.hex_input_tray_priv = 1;
+	prefs.hex_input_tray_show_alerts = 1;
 	prefs.hex_irc_reconnect_rejoin = 1;
 	prefs.hex_irc_cap_server_time = 1;
 	prefs.hex_irc_logging = 1;

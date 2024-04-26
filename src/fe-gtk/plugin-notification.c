@@ -31,7 +31,14 @@ const int CHANNEL_FLAG_BALLOON_UNSET = 1 << 22;
 static gboolean
 should_alert (void)
 {
-	int omit_away, omit_focused, omit_tray;
+	int omit_away, omit_focused, omit_tray, show_alerts, tray_enabled;
+
+	if (hexchat_get_prefs (ph, "gui_tray", NULL, &tray_enabled) != 3)
+		tray_enabled = 0;
+
+	if (tray_enabled && hexchat_get_prefs (ph, "input_tray_show_alerts", NULL, &show_alerts) == 3 &&
+			! show_alerts)
+		return FALSE;
 
 	if (hexchat_get_prefs (ph, "gui_focus_omitalerts", NULL, &omit_focused) == 3 && omit_focused)
 	{
@@ -47,17 +54,13 @@ should_alert (void)
 			return FALSE;
 	}
 
-	if (hexchat_get_prefs (ph, "gui_tray_quiet", NULL, &omit_tray) == 3 && omit_tray)
+	if (tray_enabled && hexchat_get_prefs (ph, "gui_tray_quiet", NULL, &omit_tray) == 3 &&
+			omit_tray)
 	{
-		int tray_enabled;
+		const char *status = hexchat_get_info (ph, "win_status");
 
-		if (hexchat_get_prefs (ph, "gui_tray", NULL, &tray_enabled) == 3 && tray_enabled)
-		{
-			const char *status = hexchat_get_info (ph, "win_status");
-
-			if (status && g_strcmp0 (status, "hidden") != 0)
-				return FALSE;
-		}
+		if (status && g_strcmp0 (status, "hidden") != 0)
+			return FALSE;
 	}
 
 	return TRUE;
