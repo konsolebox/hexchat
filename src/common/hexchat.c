@@ -1026,11 +1026,31 @@ set_locale (void)
 #endif
 }
 
+static gboolean is_valid_debug_domain (const gchar *domain)
+{
+	static const gchar *valid_domains[] = { "error", "warning", "critical", "message", "info",
+			"debug", "all", NULL };
+	const gchar **iter;
+
+	if (domain != NULL)
+		for (iter = valid_domains; *iter != NULL; ++iter)
+			if (g_strcmp0 (domain, *iter) == 0)
+				return TRUE;
+
+	return FALSE;
+}
+
 int
 main (int argc, char *argv[])
 {
 	int i;
 	int ret;
+	const char *env;
+
+	env = g_getenv("HEXCHAT_DEBUG");
+
+	if (env != NULL && *env != '\0')
+		g_setenv("G_MESSAGES_DEBUG", is_valid_debug_domain (env) ? env : "all", TRUE);
 
 #ifdef WIN32
 	HRESULT coinit_result;
