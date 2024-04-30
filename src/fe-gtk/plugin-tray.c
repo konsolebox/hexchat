@@ -85,6 +85,7 @@ static gboolean tray_menu_try_restore (void);
 static void tray_cleanup (void);
 static void tray_init (void);
 
+static GtkWidget *menu = NULL;
 
 static WinStatus
 tray_get_window_status (void)
@@ -481,13 +482,14 @@ blink_item (unsigned int *setting, GtkWidget *menu, char *label)
 #endif
 
 static void
-tray_menu_destroy (GtkWidget *menu, gpointer userdata)
+tray_menu_destroy (GtkWidget **menu_p, gpointer userdata)
 {
-	gtk_widget_destroy (menu);
-	g_object_unref (menu);
+	gtk_widget_destroy (*menu_p);
+	g_object_unref (*menu_p);
 #ifdef WIN32
 	g_source_remove (tray_menu_timer);
 #endif
+	*menu_p = NULL;
 }
 
 #ifdef WIN32
@@ -506,11 +508,11 @@ tray_menu_left_cb (GtkWidget *menu)
 }
 
 static gboolean
-tray_check_hide (GtkWidget *menu)
+tray_check_hide (GtkWidget **menu_p)
 {
 	if (tray_menu_inactivetime && g_get_real_time () - tray_menu_inactivetime  >= 2000000)
 	{
-		tray_menu_destroy (menu, NULL);
+		tray_menu_destroy (menu_p, NULL);
 		return G_SOURCE_REMOVE;
 	}
 
@@ -528,7 +530,6 @@ tray_menu_settings (GtkWidget * wid, gpointer none)
 static void
 tray_menu_cb (GtkWidget *widget, guint button, guint time, gpointer userdata)
 {
-	static GtkWidget *menu;
 	GtkWidget *submenu;
 	GtkWidget *item;
 	int away_status;
@@ -537,9 +538,9 @@ tray_menu_cb (GtkWidget *widget, guint button, guint time, gpointer userdata)
 	hexchat_set_context (ph, hexchat_find_context (ph, NULL, NULL));
 
 	/* close any old menu */
-	if (G_IS_OBJECT (menu))
+	if (menu != NULL && G_IS_OBJECT (menu))
 	{
-		tray_menu_destroy (menu, NULL);
+		tray_menu_destroy (&menu, NULL);
 	}
 
 	menu = gtk_menu_new ();
@@ -584,15 +585,15 @@ tray_menu_cb (GtkWidget *widget, guint button, guint time, gpointer userdata)
 	g_object_ref (menu);
 	g_object_ref_sink (menu);
 	g_object_unref (menu);
-	g_signal_connect (G_OBJECT (menu), "selection-done",
-							G_CALLBACK (tray_menu_destroy), NULL);
+	g_signal_connect_swapped (G_OBJECT (menu), "selection-done",
+							G_CALLBACK (tray_menu_destroy), &menu);
 #ifdef WIN32
 	g_signal_connect (G_OBJECT (menu), "leave-notify-event",
 							G_CALLBACK (tray_menu_left_cb), NULL);
 	g_signal_connect (G_OBJECT (menu), "enter-notify-event",
 							G_CALLBACK (tray_menu_enter_cb), NULL);
 
-	tray_menu_timer = g_timeout_add (500, (GSourceFunc)tray_check_hide, menu);
+	tray_menu_timer = g_timeout_add (500, (GSourceFunc)tray_check_hide, &menu);
 #endif
 
 	gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL,
@@ -650,7 +651,7 @@ tray_message_cb (char *word[], void *userdata)
 {
 	if (/*tray_status == TS_MESSAGE ||*/ tray_status == TS_HIGHLIGHT)
 		return HEXCHAT_EAT_NONE;
-		
+
 	if (prefs.hex_input_tray_chans)
 	{
 		tray_set_flash (ICON_MSG);
