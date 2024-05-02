@@ -1388,7 +1388,7 @@ server_child (server * serv)
 	int sok, psok;
 	char *hostname = serv->hostname;
 	char *real_hostname = NULL;
-	char *ip;
+	char *ip = NULL;
 	char *proxy_ip = NULL;
 	char *local_ip;
 	int connect_port;
