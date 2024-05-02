@@ -467,7 +467,6 @@ tray_make_item (GtkWidget *menu, char *label, void *callback, void *userdata)
 	return item;
 }
 
-#ifndef WIN32
 static void
 tray_toggle_cb (GtkCheckMenuItem *item, unsigned int *setting)
 {
@@ -475,11 +474,10 @@ tray_toggle_cb (GtkCheckMenuItem *item, unsigned int *setting)
 }
 
 static void
-blink_item (unsigned int *setting, GtkWidget *menu, char *label)
+tray_toggle_item (unsigned int *setting, GtkWidget *menu, char *label)
 {
 	menu_toggle_item (label, menu, tray_toggle_cb, setting, *setting);
 }
-#endif
 
 static void
 tray_menu_destroy (GtkWidget **menu_p, gpointer userdata)
@@ -554,10 +552,10 @@ tray_menu_cb (GtkWidget *widget, guint button, guint time, gpointer userdata)
 
 #ifndef WIN32 /* submenus are buggy on win32 */
 	submenu = mg_submenu (menu, _("_Blink on"));
-	blink_item (&prefs.hex_input_tray_chans, submenu, _("Channel Message"));
-	blink_item (&prefs.hex_input_tray_priv, submenu, _("Private Message"));
-	blink_item (&prefs.hex_input_tray_hilight, submenu, _("Highlighted Message"));
-	/*blink_item (BIT_FILEOFFER, submenu, _("File Offer"));*/
+	tray_toggle_item (&prefs.hex_input_tray_chans, submenu, _("Channel Message"));
+	tray_toggle_item (&prefs.hex_input_tray_priv, submenu, _("Private Message"));
+	tray_toggle_item (&prefs.hex_input_tray_hilight, submenu, _("Highlighted Message"));
+	/*tray_toggle_item (BIT_FILEOFFER, submenu, _("File Offer"));*/
 
 	submenu = mg_submenu (menu, _("_Change status"));
 #else /* so show away/back in main tray menu */
@@ -572,8 +570,7 @@ tray_menu_cb (GtkWidget *widget, guint button, guint time, gpointer userdata)
 	if (away_status == 2)
 		gtk_widget_set_sensitive (item, FALSE);
 
-	menu_toggle_item (_("Show notifications"), menu, tray_toggle_cb, &prefs.hex_input_tray_show_alerts,
-			prefs.hex_input_tray_show_alerts);
+	tray_toggle_item (&prefs.hex_input_tray_show_alerts, menu, _("Show notifications"));
 
 	menu_add_plugin_items (menu, "\x5$TRAY", NULL);
 
