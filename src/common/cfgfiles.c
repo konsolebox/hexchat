@@ -794,7 +794,7 @@ load_default_config(void)
 	prefs.hex_net_throttle = 1;
 	prefs.hex_stamp_log = 1;
 	prefs.hex_stamp_text = 1;
-	prefs.hex_text_autocopy_text = 1;
+	prefs.hex_text_autocopy_text = 0;
 	prefs.hex_text_indent = 1;
 	prefs.hex_text_replay = 1;
 	prefs.hex_text_search_follow = 1;
