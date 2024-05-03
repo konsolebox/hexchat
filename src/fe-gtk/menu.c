@@ -918,14 +918,30 @@ menu_fullscreen_toggle (GtkWidget *wid, gpointer ud)
 	}
 }
 
+static void
+menu_copy_selection (GtkWidget *, gpointer)
+{
+	gtk_xtext_copy_selection (GTK_XTEXT (current_sess->gui->xtext));
+}
+
 void
 menu_middlemenu (session *sess, GdkEventButton *event)
 {
-	GtkWidget *menu;
+	GtkWidget *menu, *separator;
 	GtkAccelGroup *accel_group;
 
 	accel_group = gtk_accel_group_new ();
 	menu = menu_create_main (accel_group, FALSE, sess->server->is_away, !sess->gui->is_tab, NULL);
+
+	if (! prefs.hex_text_autocopy_text)
+	{
+		separator = gtk_separator_menu_item_new ();
+		gtk_menu_shell_append (GTK_MENU_SHELL (menu), separator);
+		gtk_widget_show (separator);
+
+		mg_create_icon_item (_("_Copy Selection"), GTK_STOCK_COPY, menu, menu_copy_selection, NULL);
+	}
+
 	menu_popup (menu, event, accel_group);
 }
 
@@ -1329,12 +1345,6 @@ menu_movetomarker (GtkWidget *wid, gpointer none)
 		if (str[0])
 			PrintText (current_sess, str);
 	}
-}
-
-static void
-menu_copy_selection (GtkWidget * wid, gpointer none)
-{
-	gtk_xtext_copy_selection (GTK_XTEXT (current_sess->gui->xtext));
 }
 
 static void
