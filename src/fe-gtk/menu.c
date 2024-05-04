@@ -919,7 +919,7 @@ menu_fullscreen_toggle (GtkWidget *wid, gpointer ud)
 }
 
 static void
-menu_copy_selection (GtkWidget *, gpointer)
+menu_copy_selection (GtkWidget *wid, gpointer none)
 {
 	gtk_xtext_copy_selection (GTK_XTEXT (current_sess->gui->xtext));
 }
