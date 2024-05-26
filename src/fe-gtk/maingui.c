@@ -3792,6 +3792,10 @@ mg_drag_begin_cb (GtkWidget *widget, GdkDragContext *context, gpointer userdata)
 	if (!mg_is_gui_target (context))
 		return FALSE;
 
+	/* abort if a drag-drop instance already exists to avoid crashes */
+	if (g_object_get_data (G_OBJECT (widget), "ico"))
+		return FALSE;
+
 	cmap = gtk_widget_get_colormap (widget);
 	width = gdk_window_get_width (gtk_widget_get_window (widget));
 	height = gdk_window_get_height (gtk_widget_get_window (widget));
@@ -3813,7 +3817,7 @@ mg_drag_end_cb (GtkWidget *widget, GdkDragContext *context, gpointer userdata)
 	if (!mg_is_gui_target (context))
 		return;
 
-	g_object_unref (g_object_get_data (G_OBJECT (widget), "ico"));
+	g_object_unref (g_object_steal_data (G_OBJECT (widget), "ico"));
 }
 
 /* drop complete */
