@@ -23,6 +23,7 @@ jobs:
             mingw-w64-x86_64-luajit
             mingw-w64-x86_64-desktop-file-utils
             mingw-w64-x86_64-appstream
+            mingw-w64-x86_64-appstream-glib
 
       - name: Configure
         run: >-
