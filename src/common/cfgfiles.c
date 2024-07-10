@@ -419,6 +419,7 @@ const struct prefs vars[] =
 	{"gui_lagometer", P_OFFINT (hex_gui_lagometer), TYPE_INT},
 	{"gui_lang", P_OFFINT (hex_gui_lang), TYPE_INT},
 	{"gui_mode_buttons", P_OFFINT (hex_gui_mode_buttons), TYPE_BOOL},
+	{"gui_notification_timeout", P_OFFINT (hex_gui_notification_timeout), TYPE_INT},
 	{"gui_pane_divider_position", P_OFFINT (hex_gui_pane_divider_position), TYPE_INT},
 	{"gui_pane_left_size", P_OFFINT (hex_gui_pane_left_size), TYPE_INT},
 	{"gui_pane_right_size", P_OFFINT (hex_gui_pane_right_size), TYPE_INT},
@@ -826,6 +827,7 @@ load_default_config(void)
 	prefs.hex_gui_dialog_width = 500;
 	prefs.hex_gui_lagometer = 1;
 	prefs.hex_gui_lang = get_default_language();
+	prefs.hex_gui_notification_timeout = 0;
 	prefs.hex_gui_pane_left_size = 128;		/* with treeview icons we need a bit bigger space */
 	prefs.hex_gui_pane_right_size = 100;
 	prefs.hex_gui_pane_right_size_min = 80;

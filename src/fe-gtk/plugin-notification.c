@@ -82,12 +82,16 @@ static void
 show_notification (const char *title, const char *text)
 {
 	char *stripped_title, *stripped_text;
+	int notification_timeout;
 
 	/* Strip all colors */
 	stripped_title = hexchat_strip (ph, title, -1, 7);
 	stripped_text = hexchat_strip (ph, text, -1, 7);
-	
-	notification_backend_show (stripped_title, stripped_text);
+
+	if (hexchat_get_prefs (ph, "gui_notification_timeout", NULL, &notification_timeout) != 3)
+		notification_timeout = 0;
+
+	notification_backend_show (stripped_title, stripped_text, notification_timeout);
 
 	hexchat_free (ph, stripped_title);
 	hexchat_free (ph, stripped_text);

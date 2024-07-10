@@ -50,7 +50,7 @@ narrow(const std::wstring & to_narrow)
 extern "C"
 {
 	__declspec (dllexport) void
-	notification_backend_show (const char *title, const char *text)
+	notification_backend_show (const char *title, const char *text, int notification_timeout)
 	{
 		try
 		{

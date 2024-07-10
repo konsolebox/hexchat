@@ -244,6 +244,7 @@ struct hexchatprefs
 	int hex_gui_dialog_width;
 	int hex_gui_lagometer;
 	int hex_gui_lang;
+	int hex_gui_notification_timeout;
 	int hex_gui_pane_divider_position;
 	int hex_gui_pane_left_size;
 	int hex_gui_pane_right_size;

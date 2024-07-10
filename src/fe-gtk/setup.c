@@ -424,6 +424,10 @@ static const setting alert_settings[] =
 	{ST_TOGGLE,	N_("Close to tray"), P_OFFINTNL(hex_gui_tray_close), 0, 0, 0},
 	{ST_TOGGLE,	N_("Automatically mark away/back"), P_OFFINTNL(hex_gui_tray_away), N_("Automatically change status when hiding to tray."), 0, 0},
 	{ST_TOGGLE,	N_("Only show notifications when hidden or iconified"), P_OFFINTNL(hex_gui_tray_quiet), 0, 0, 0},
+#ifndef WIN32 // Based on meson.build:46
+	{ST_NUMBER,	N_("Notification timeout:"), P_OFFINTNL(hex_gui_notification_timeout), 0,
+			(const char **)N_("0 = backend default"), 1000},
+#endif
 
 	{ST_HEADER,	N_("Highlighted Messages"),0,0,0},
 	{ST_LABEL,	N_("Highlighted messages are ones where your nickname is mentioned, but also:"), 0, 0, 0, 1},

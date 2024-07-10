@@ -20,7 +20,7 @@
 #define HEXCHAT_PLUGIN_NOTIFICATION_BACKEND_H
 
 int notification_backend_supported (void);
-void notification_backend_show (const char *title, const char *text);
+void notification_backend_show (const char *title, const char *text, int notification_timeout);
 int notification_backend_init (const char **error);
 void notification_backend_deinit (void);
 

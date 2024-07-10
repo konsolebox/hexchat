@@ -44,7 +44,7 @@ on_notify_ready (GDBusProxy *proxy, GAsyncResult *res, gpointer user_data)
 }
 
 void
-notification_backend_show (const char *title, const char *text)
+notification_backend_show (const char *title, const char *text, int notification_timeout)
 {
     GVariantBuilder params;
 
@@ -69,7 +69,9 @@ notification_backend_show (const char *title, const char *text)
     g_variant_builder_close (&params);
     g_variant_builder_close (&params);
 
-    g_variant_builder_add (&params, "i", -1); /* Expiration */
+    /* Expiration */
+    g_variant_builder_add (&params, "i",
+                           notification_timeout > 0 ? notification_timeout : -1);
 
     g_dbus_proxy_call (fdo_notifications,
                        "Notify",
