@@ -678,24 +678,32 @@ servlist_favor (GtkWidget *button, gpointer none)
 }
 
 static void
-servlist_update_from_entry (char **str, GtkWidget *entry)
+servlist_update_from_entry (char **str, GtkWidget *entry, gboolean strip)
 {
-	g_free (*str);
+	const char *entry_text;
+	char *temp;
 
-	if (gtk_entry_get_text (GTK_ENTRY (entry))[0] == 0)
-		*str = NULL;
-	else
-		*str = g_strdup (gtk_entry_get_text (GTK_ENTRY (entry)));
+	entry_text = gtk_entry_get_text (GTK_ENTRY (entry));
+	temp = entry_text[0] == '\0' ? NULL : g_strdup (entry_text);
+
+	if (temp && strip && (temp = g_strstrip (temp))[0] == '\0')
+	{
+		g_free (temp);
+		temp = NULL;
+	}
+
+	g_free (*str);
+	*str = temp;
 }
 
 static void
 servlist_edit_update (ircnet *net)
 {
-	servlist_update_from_entry (&net->nick, edit_entry_nick);
-	servlist_update_from_entry (&net->nick2, edit_entry_nick2);
-	servlist_update_from_entry (&net->user, edit_entry_user);
-	servlist_update_from_entry (&net->real, edit_entry_real);
-	servlist_update_from_entry (&net->pass, edit_entry_pass);
+	servlist_update_from_entry (&net->nick, edit_entry_nick, TRUE);
+	servlist_update_from_entry (&net->nick2, edit_entry_nick2, TRUE);
+	servlist_update_from_entry (&net->user, edit_entry_user, TRUE);
+	servlist_update_from_entry (&net->real, edit_entry_real, TRUE);
+	servlist_update_from_entry (&net->pass, edit_entry_pass, FALSE);
 }
 
 static void
