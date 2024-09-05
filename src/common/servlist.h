@@ -51,6 +51,9 @@ typedef struct ircnet
 	GSList *favchanlist;
 	int selected;
 	guint32 flags;
+#ifdef HAVE_NET_BIND_TO_INTERFACE
+	char *bind_interface;
+#endif
 } ircnet;
 
 extern GSList *network_list;

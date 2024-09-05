@@ -83,6 +83,11 @@ static GtkWidget *edit_label_real;
 static GtkWidget *edit_label_user;
 static GtkWidget *edit_trees[N_TREES];
 
+#ifdef HAVE_NET_BIND_TO_INTERFACE
+static GtkWidget *edit_entry_bind_interface;
+static GtkWidget *edit_label_bind_interface;
+#endif
+
 static ircnet *selected_net = NULL;
 static ircserver *selected_serv = NULL;
 static commandentry *selected_cmd = NULL;
@@ -704,6 +709,9 @@ servlist_edit_update (ircnet *net)
 	servlist_update_from_entry (&net->user, edit_entry_user, TRUE);
 	servlist_update_from_entry (&net->real, edit_entry_real, TRUE);
 	servlist_update_from_entry (&net->pass, edit_entry_pass, FALSE);
+#ifdef HAVE_NET_BIND_TO_INTERFACE
+	servlist_update_from_entry (&net->bind_interface, edit_entry_bind_interface, TRUE);
+#endif
 }
 
 static void
@@ -1919,6 +1927,9 @@ servlist_open_edit (GtkWidget *parent, ircnet *net)
 	comboboxentry_charset = servlist_create_charsetcombo ();
 	gtk_table_attach (GTK_TABLE (table3), comboboxentry_charset, 1, 2, 12, 13, (GtkAttachOptions) (GTK_FILL), (GtkAttachOptions) (GTK_FILL), 4, 2);
 
+#ifdef HAVE_NET_BIND_TO_INTERFACE
+	edit_entry_bind_interface = servlist_create_entry (table3, _("_Bind to interface:"), 14, net->bind_interface, &edit_label_bind_interface, 0);
+#endif
 
 	/* Rule and Close button */
 	hseparator2 = gtk_hseparator_new ();

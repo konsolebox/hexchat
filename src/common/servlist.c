@@ -420,6 +420,14 @@ servlist_connect (session *sess, ircnet *net, gboolean join)
 		(net->flags & FLAG_ALLOW_INVALID) ? TRUE : FALSE;
 #endif
 
+#ifdef HAVE_NET_BIND_TO_INTERFACE
+	if (net->bind_interface)
+		safe_strcpy (serv->bind_interface, net->bind_interface,
+				sizeof (serv->bind_interface));
+	else
+		serv->bind_interface[0] = '\0';
+#endif
+
 	serv->network = net;
 
 	port = strrchr (ircserv->hostname, '/');
@@ -1053,6 +1061,11 @@ servlist_load (void)
 						net->logintype = LOGIN_NICKSERV;
 					}
 				}
+#ifdef HAVE_NET_BIND_TO_INTERFACE
+			case 'b':
+				if (!net->bind_interface)
+					net->bind_interface = g_strdup (buf + 2);
+#endif
 			}
 		}
 		if (buf[0] == 'N')
@@ -1163,6 +1176,11 @@ servlist_save (void)
 				g_free (buf);
 			}
 		}
+
+#ifdef HAVE_NET_BIND_TO_INTERFACE
+		if (net->bind_interface)
+			fprintf (fp, "b=%s\n", net->bind_interface);
+#endif
 
 		fprintf (fp, "F=%d\nD=%d\n", net->flags, net->selected);
 

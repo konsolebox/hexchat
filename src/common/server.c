@@ -1402,16 +1402,18 @@ server_child (server * serv)
 	ns_server = net_store_new ();
 
 #ifdef HAVE_NET_BIND_TO_INTERFACE
-	if (prefs.hex_net_bind_interface[0])
+	const char *bind_interface = serv->bind_interface[0] ? serv->bind_interface :
+			prefs.hex_net_bind_interface[0] ? prefs.hex_net_bind_interface : NULL;
+
+	if (bind_interface)
 	{
-		int r = net_bind_to_interface (prefs.hex_net_bind_interface, serv->sok4, serv->sok6,
-				&sok4_error, &sok6_error);
+		int r = net_bind_to_interface (bind_interface, serv->sok4, serv->sok6, &sok4_error,
+				&sok6_error);
 		if (r == 3)
 		{
 			const char *format = (strncmp (sok4_error, sok6_error, 128) == 0) ? "11\n%s\n%s\n" :
 					"11\n%s\n%s; %s\n";
-			g_snprintf (buf, sizeof (buf), format, prefs.hex_net_bind_interface, sok4_error,
-					sok6_error);
+			g_snprintf (buf, sizeof (buf), format, bind_interface, sok4_error, sok6_error);
 			write (serv->childwrite, buf, strlen (buf));
 			goto xit;
 		}

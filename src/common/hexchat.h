@@ -594,6 +594,9 @@ typedef struct server
 	unsigned int accept_invalid_cert:1;/* ignore result of server's cert. verify */
 	scram_session *scram_session; /* session for SASL SCRAM authentication */
 #endif
+#ifdef HAVE_NET_BIND_TO_INTERFACE
+	char bind_interface[127];
+#endif
 } server;
 
 typedef int (*cmd_callback) (struct session * sess, char *tbuf, char *word[],
