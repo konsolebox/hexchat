@@ -58,12 +58,12 @@ jobs:
           move ..\hexchat-build .\
         shell: cmd
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: Installer ${{ matrix.arch }}
           path: HexChat*.exe
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: Build Files ${{ matrix.arch  }}
           path: hexchat-build
