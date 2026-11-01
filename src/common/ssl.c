@@ -354,7 +354,9 @@ _SSL_close (SSL * ssl)
 	ERR_remove_thread_state (NULL);
 #endif
 #else
+#if OPENSSL_VERSION_NUMBER < 0x40000000L
 	ERR_remove_state (0);
+#endif
 #endif
 }
 
